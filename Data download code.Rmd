@@ -1,0 +1,430 @@
+---
+title: "Downloading data"
+output: pdf_document
+---
+# Download relevant packages
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(nhanesA)
+library(knitr)
+library(tidyverse)
+library(SASxport)
+
+```
+#Decide year of dataset to use
+#Find out what datasets I need to use- then use nhanes() to download them as dataframes
+#Combine necessary datasets into one large one
+
+```{r}
+?nhanesTables
+nhanesTables(data_group='DEMO', year = 2003)
+nhanesTables(data_group='EXAM', year = 2003)
+nhanesTables(data_group='LAB', year = 2003)
+nhanesTables(data_group='Q', year = 2003)
+nhanesTables(data_group= 'DIET', year = 2003)
+
+nhanesTables(data_group='DEMO', year = 2005)
+nhanesTables(data_group='EXAM', year = 2005)
+nhanesTables(data_group='LAB', year = 2005)
+nhanesTables(data_group='Q', year = 2005)
+nhanesTables(data_group= 'DIET', year = 2005)
+
+#get a description of the variables in the dataset
+kable(nhanesTableVars(data_group = 'DEMO', nh_table = 'DEMO_C', namesonly = FALSE))
+```
+#Pull out each table that is relevant using search function on website
+#The data file name is the table that you input here to retrieve it #and you also need the variable name
+#to make sure you select just the variables you are interested in 
+#Give it a name so that it can be merged later
+```{r}
+demo <- nhanes('DEMO_C')
+bp <- nhanes('BPX_C')
+bmi <- nhanes('BMX_C')
+chol1 <- nhanes('DR1IFF_C')
+chol2 <- nhanes('DR1TOT_C')
+hdl <- nhanes('l13_c')
+ldl <- nhanes('L13AM_C')
+chol3 <- nhanes('L40_C')
+smoke <- nhanes('SMQ_C')
+pa <- nhanes('PAQ_C')
+kidney <- nhanes('OHXREF_C')
+diab <- nhanes('DIQ_C')
+medical <- nhanes('MCQ_C')
+mental <- nhanes('CIQGAD_C')
+occupation <- nhanes('OCQ_C')
+sleep <- nhanes('CIQDEP_C')
+
+#tells you the name of the variables in the table
+names(chol1)
+```
+
+```{r}
+demo3 <- demo[c('SEQN', 'RIDRETH1', 'INDHHINC', 'RIAGENDR', 'RIDAGEYR', 'RIDAGEMN')]
+demovars <- names(demo3)
+demovars
+#original dataset with changed column names
+demo3 <- demo3 %>% rename(Number = SEQN, Ethnicity = RIDRETH1, Household_income = INDHHINC, Gender = RIAGENDR, Age = RIDAGEYR, Age_months = RIDAGEMN)
+demo3
+#translate data into categories and change column names
+demo34 <- nhanesTranslate('DEMO_C', demovars, data = demo3)
+demo34
+```
+
+```{r}
+bmi3 <- bmi[c('SEQN', 'BMXBMI', 'BMXWT')]
+bmivars <- names(bmi3)
+bmivars
+#original dataset with changed column names
+bmi3 <- bmi3 %>% rename(Number = SEQN, BMI = BMXBMI, Weight = BMXWT)
+bmi3
+#translate data into categories and change column names
+bmi34 <- nhanesTranslate('BMX_C', bmivars, data = bmi3)
+bmi34
+```
+```{r}
+bp3 <- bp[c('SEQN', 'BPXSY1', 'BPXDI1', 'BPXPULS')]
+bpvars <- names(bp3)
+bpvars
+#original dataset with changed column names
+bp3 <- bp3 %>% rename(Number = SEQN, Diastolic = BPXDI1, Systolic = BPXSY1, regularity = BPXPULS)
+bp3
+#translate data into categories and change column names
+bp34 <- nhanesTranslate('BMX_C', bpvars, data = bp3)
+bp34
+```
+
+```{r}
+#chol13 <- chol1[c('SEQN', 'DR1ICHOL')]
+#chol1vars <- names(chol13)
+#chol1vars
+#original dataset with changed column names
+#chol13 <- chol13 %>% rename(Number = SEQN, Chol1 = DR1ICHOL)
+#chol13
+#translate data into categories and change column names
+#chol134 <- nhanesTranslate('DR1IFF_C', chol1vars, data = chol13)
+#chol134
+```
+
+```{r}
+
+chol23 <- chol2[c('SEQN', 'DR1TCHOL')]
+chol2vars <- names(chol23)
+chol2vars
+#original dataset with changed column names
+chol23 <- chol23 %>% rename(Number = SEQN, Chol2 = DR1TCHOL)
+chol23
+#translate data into categories and change column names
+chol234 <- nhanesTranslate('DR1TOT_C', chol2vars, data = chol23)
+chol234
+```
+
+```{r}
+names(hdl)
+hdl3 <- hdl[c('SEQN', 'LBDHDDSI')]
+hdl3vars <- names(hdl3)
+hdl3vars
+#original dataset with changed column names
+hdl33 <- hdl3 %>% rename(Number = SEQN, hdl = LBDHDDSI)
+hdl33
+#translate data into categories and change column names
+hdl334 <- nhanesTranslate('l13_c', hdl3vars, data = hdl33)
+hdl334
+```
+
+```{r}
+names(chol3)
+chol33 <- chol3[c('SEQN', 'LBDSCHSI')]
+chol3vars <- names(chol33)
+chol3vars
+#original dataset with changed column names
+chol33 <- chol33 %>% rename(Number = SEQN, chol3 = LBDSCHSI)
+chol33
+#translate data into categories and change column names
+chol334 <- nhanesTranslate('L40_C', chol3vars, data = chol33)
+chol334
+```
+
+```{r}
+names(diab)
+diab3 <- diab[c('SEQN', 'DIQ010', 'DIQ050')]
+diab3vars <- names(diab3)
+diab3vars
+#original dataset with changed column names
+diab3 <- diab3 %>% rename(Number = SEQN, Diabetes = DIQ010, Insulin = DIQ050)
+diab3
+#translate data into categories and change column names
+diab34 <- nhanesTranslate('L40_C', diab3vars, data = diab3)
+diab34
+```
+
+```{r}
+names(ldl)
+ldl3 <- ldl[c('SEQN', 'LBDLDL')]
+ldl3vars <- names(ldl3)
+ldl3vars
+#original dataset with changed column names
+ldl3 <- ldl3 %>% rename(Number = SEQN, ldl = LBDLDL)
+ldl3
+#translate data into categories and change column names
+ldl34 <- nhanesTranslate('L13AM_C', ldl3vars, data = ldl3)
+ldl34
+```
+
+```{r}
+names(smoke)
+smoke3 <- smoke[c('SEQN', 'SMQ040', 'SMQ020', 'SMD650', 'SMD070', 'SMD057')]
+smoke3vars <- names(smoke3)
+smoke3vars
+#original dataset with changed column names
+smoke3 <- smoke3 %>% rename(Number = SEQN, smoking_status = SMQ040, smoked_100 = SMQ020, smoke_30days = SMD650, smoke_day = SMD070, number_quit = SMD057)
+smoke3
+#translate data into categories and change column names
+smoke34 <- nhanesTranslate('SMQ_C', smoke3vars, data = smoke3)
+smoke34
+```
+
+```{r}
+names(pa)
+pa3 <- pa[c('SEQN', 'PAD200', 'PAQ560', 'PAD460')]
+pa3vars <- names(pa3)
+pa3vars
+#original dataset with changed column names
+pa3 <- pa3 %>% rename(Number = SEQN, PA_previous = PAD200, number_activities = PAQ560, days_active = PAD460)
+pa3
+#translate data into categories and change column names
+pa34 <- nhanesTranslate('PAQ_C', pa3vars, data = pa3)
+pa34
+```
+
+```{r}
+names(kidney)
+kidney3 <- kidney[c('SEQN', 'OHQ144')]
+kidney3vars <- names(kidney3)
+kidney3vars
+#original dataset with changed column names
+kidney3 <- kidney3 %>% rename(Number = SEQN, kidney_disease = OHQ144)
+kidney3
+#translate data into categories and change column names
+kidney34 <- nhanesTranslate('OHXREF_C', kidney3vars, data = kidney3)
+kidney34
+```
+
+```{r}
+names(medical)
+medical3 <- medical[c('SEQN', 'MCQ160E', 'MCQ250G', 'MCQ160L', 'MCQ220', 'MCQ160F')]
+medical3vars <- names(medical3)
+medical3vars
+#original dataset with changed column names
+medical3 <- medical3 %>% rename(Number = SEQN, heart_attack = MCQ160E, relative_ha = MCQ250G, liver_problem = MCQ160L, cancer = MCQ220, stroke = MCQ160F)
+medical3
+#translate data into categories and change column names
+medical34 <- nhanesTranslate('MCQ_C', medical3vars, data = medical3)
+medical34
+```
+
+```{r}
+#names(mental)
+#mental3 <- mental[c('SEQN', 'CIQGPHE')]
+#mental3vars <- names(mental3)
+#mental3vars
+##original dataset with changed column names
+#mental3 <- mental3 %>% rename(Number = SEQN, mental_illness = CIQGPHE)
+#mental3
+##translate data into categories and change column names
+#mental34 <- nhanesTranslate('CIQGAD_C', mental3vars, data = mental3)
+#mental34
+```
+
+```{r}
+names(occupation)
+occupation3 <- occupation[c('SEQN', 'OCD240')]
+occupation3vars <- names(occupation3)
+occupation3vars
+#original dataset with changed column names
+occupation3 <- occupation3 %>% rename(Number = SEQN, occupation = OCD240)
+occupation3
+#translate data into categories and change column names
+occupation34 <- nhanesTranslate('OCQ_C', occupation3vars, data = occupation3)
+occupation34
+```
+
+```{r}
+#names(sleep)
+#sleep3 <- sleep[c('SEQN', 'CIQD025')]
+#sleep3vars <- names(sleep3)
+#sleep3vars
+##original dataset with changed column names
+#sleep3 <- sleep3 %>% rename(Number = SEQN, sleep_disturb = CIQD025)
+#sleep3
+##translate data into categories and change column names
+#sleep34 <- nhanesTranslate('CIQDEP_C', sleep3vars, data = sleep3)
+#sleep34
+```
+
+```{r}
+#merge data tables together into a dataset
+#use seqn (renamed as Number) to match files
+
+nh2003 <- merge(bmi34, bp34, by = c('Number'), all = TRUE)
+nh2003
+#nh2003 <- merge(nh2003, chol134, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, chol234, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, chol334, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, demo34, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, hdl334, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, medical34, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, kidney34, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, ldl34, by = c('Number'), all=TRUE)
+#nh2003 <- merge(nh2003, mental34, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, occupation34, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, pa34, by = c('Number'), all=TRUE)
+#nh2003 <- merge(nh2003, sleep34, by = c('Number'), all=TRUE)
+nh2003 <- merge(nh2003, smoke34, by = c('Number'), all=TRUE)
+nh2003
+
+```
+
+```{r}
+#MERGE MORTALITY FILES
+
+#install.packages("readr")    #if package is not installed already, then uncomment and run this line
+#install.packages("dplyr")    #if package is not installed already, then uncomment and run this line
+library(readr)
+library(dplyr)
+
+
+# the location where the .DAT file is saved:
+setwd("C:/Users/charl/OneDrive/Desktop/Data Science/Semester 2/Dissertation/Code/Model Code")
+
+
+# remove all objects from the R environment
+#rm(list=ls())
+
+################
+#NHANES VERSION#
+################
+
+srvyin <- paste("NHANES_2003_2004_MORT_2015_PUBLIC.dat")   # full .DAT name here
+srvyout <- "nhanes3mort" # shorthand dataset name here
+
+
+
+# read in the fixed-width format ASCII file
+dsn <- read_fwf(file=srvyin,
+                col_types = "ciiiiiiiddii",
+                fwf_cols(publicid = c(1,14),
+                         eligstat = c(15,15),
+                         mortstat = c(16,16),
+                         ucod_leading = c(17,19),
+                         diabetes = c(20,20),
+                         hyperten = c(21,21),
+                         dodqtr = c(22,22),
+                         dodyear = c(23,26),
+                         wgt_new = c(27,34),
+                         sa_wgt_new = c(35,42),
+                         permth_int = c(43,45),
+                         permth_exm = c(46,48)
+                ),
+                na = "."
+)
+
+# create the ID (SEQN) for the NHANES surveys
+dsn$seqn <- substr(dsn$publicid,1,5)
+# NOTE:   SEQN is the unique ID for NHANES.
+
+#Drop NHIS variables
+dsn <- select(dsn, -publicid)
+dsn <- select(dsn, -dodqtr)
+dsn <- select(dsn, -dodyear)
+dsn <- select(dsn, -wgt_new)
+dsn <- select(dsn, -sa_wgt_new)
+
+
+# Structure and contents of data
+str(dsn)
+
+
+# Variable frequencies
+
+#ELIGSTAT: Eligibility Status for Mortality Follow-up
+table(dsn$eligstat)
+#1 = "Eligible"
+#2 = "Under age 18, not available for public release"
+#3 = "Ineligible"
+
+#MORTSTAT: Final Mortality Status
+table(dsn$mortstat, useNA="ifany")
+# 0 = Assumed alive
+# 1 = Assumed deceased
+# <NA> = Ineligible or under age 18
+
+#UCOD_LEADING: Underlying Cause of Death: Recode
+table(dsn$ucod_leading, useNA="ifany")
+# 1 = Diseases of heart (I00-I09, I11, I13, I20-I51)
+# 2 = Malignant neoplasms (C00-C97)
+# 3 = Chronic lower respiratory diseases (J40-J47)
+# 4 = Accidents (unintentional injuries) (V01-X59, Y85-Y86)
+# 5 = Cerebrovascular diseases (I60-I69)
+# 6 = Alzheimer's disease (G30)
+# 7 = Diabetes mellitus (E10-E14)
+# 8 = Influenza and pneumonia (J09-J18)
+# 9 = Nephritis, nephrotic syndrome and nephrosis (N00-N07, N17-N19, N25-N27)
+# 10 = All other causes (residual)
+# <NA> = Ineligible, under age 18, assumed alive, or no cause of death data
+
+#DIABETES: Diabetes Flag from Multiple Cause of Death (MCOD)
+table(dsn$diabetes, useNA="ifany")
+# 0 = No - Condition not listed as a multiple cause of death
+# 1 = Yes - Condition listed as a multiple cause of death
+# <NA> = Assumed alive, under age 18, ineligible for mortality follow-up, or MCOD not available
+
+#HYPERTEN: Hypertension Flag from Multiple Cause of Death (MCOD)
+table(dsn$hyperten, useNA="ifany")
+# 0 = No - Condition not listed as a multiple cause of death
+# 1 = Yes - Condition listed as a multiple cause of death
+# <NA> = Assumed alive, under age 18, ineligible for mortality follow-up, or MCOD not available
+
+# Re-name the dataset, DSN, to the short survey name then remove other R objects
+assign(paste0(srvyout), dsn)
+rm(dsn, srvyin, srvyout)
+
+# Combining datasets:
+nhanes3mort <- nhanes3mort %>% rename(Number = seqn)
+nhanes3mort
+nh2003full <- merge(nh2003, nhanes3mort, by = c('Number'), all=TRUE)
+```
+
+```{r}
+#Save dataset so it doesn't have to be run again
+#Open by clicking File > Open > Select 'file.RData'
+save(nh2003full, file = 'nh2003full.RData')
+
+write.csv(nh2003full, file = 'nh2003full.csv')
+glimpse(nh2003full)
+```
+
+```{r}
+library(survival)
+
+#removes all rows where there is 2 or 3 in ELIGSTAT column (not eligible for follow-up) or under 18 in age column
+adult_nh <- subset(nh2003full, eligstat != 2 & eligstat != 3 & Age >= 18)
+adult_nh
+
+#survival object for when there is no missing mortality data- 5610 people
+surv_adult <- Surv(time = adult_nh$permth_int, event = adult_nh$mortstat)
+surv_adult
+
+
+# or can just set up the formula in the model as Surv(time, event) and take the columns from there!
+surv_adult
+
+```
+
+```{r}
+#Save just adult file- open it using File > Open RData
+save(adult_nh, file = 'adult_nh.RData')
+
+write.csv(adult_nh, file = 'adult_nh.csv')
+glimpse(adult_nh)
+```
+
