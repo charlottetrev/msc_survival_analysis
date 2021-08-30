@@ -6,33 +6,23 @@ library(dplyr)
 library(survival)
 library(gbm)
 
-library(rpart)
-data(kyphosis)
-y <- as.numeric(kyphosis$Kyphosis)-1
-x <- kyphosis$Age
-glm1 <- glm(y~poly(x,2),family=binomial)
-p <- predict(glm1,type="response")
-calibrate.plot(y, p, xlim=c(0,0.6), ylim=c(0,0.6))
-
-
-
-
 ##Download test data to get tables
-test_data <- read.csv('test_data.csv')
+test_data <- read.csv('testnew_data.csv')
+test_data <- test_data[3:22]
 
 ###CALIBRATION DATA PLOTS- OBS VS PRED VALUES/RISK SCORES
 ## Open relevant datasets for time to event data
 ## Add new column to test data to use in plots
 
-tte_cw <- read.csv('cwgradboost_timetoevent.csv')
+tte_cw <- read.csv('cwtimetoevent_.csv')
 riskcw <- tte_cw$index
 test_data$cwriskscore = riskcw
 
-tte_rt <- read.csv('rtgradboost_timetoevent.csv')
+tte_rt <- read.csv('rttimetoevent.csv')
 riskrt <- tte_rt$index
 test_data$rtriskscore = riskrt
 
-rsf_risk <- read.csv('rsfriskscores_results.csv')
+rsf_risk <- read.csv('rsfcalibrate_results2.csv')
 rsfriskscore <- rsf_risk$riskscore
 test_data$rsfrisk = rsfriskscore
 
@@ -47,7 +37,7 @@ rtplot <- ggplot(test_data_plot, aes(x=rtriskscore, y=permth_int, color = Gender
 rtplot
 rtplot + facet_wrap( ~Gender, ncol=2)
 
-rsfplot <- ggplot(test_data_plot, aes(x=rsfrisk, y=permth_int, color = Gender)) + geom_point() + labs(title='RSF observed and predicted time to event values', y='Observed time to event(months)', x='Predicted time to event(months)') + geom_abline() + xlim(0,300) + ylim(0,300)
+rsfplot <- ggplot(test_data_plot, aes(x=rsfrisk, y=permth_int, color = Gender)) + geom_point() + labs(title='RSF observed survival time against predicted risk scores', y='Observed time to event(months)', x='Predicted risk score') + geom_abline() + xlim(0,300) + ylim(0,300)
 rsfplot
 rsfplot + facet_wrap( ~Gender, ncol=2)
 
@@ -55,7 +45,7 @@ rsfplot + facet_wrap( ~Gender, ncol=2)
 ###CALIBRATION PLOTS WITH SURVIVAL FUNCTION VALUES
 ## Get the 10 year predictions from the datasets
 ## Add to the test_data to use in the plots
-rsf_calibrate <- read.csv('rsfcalibrate.csv')
+rsf_calibrate <- read.csv('rsfcalibrate2.csv')
 rsf_calib <- rsf_calibrate$X120
 test_data$rsf_calib = rsf_calib
 test_data$rsf_calib <- 1 - test_data$rsf_calib 

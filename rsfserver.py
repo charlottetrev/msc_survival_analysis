@@ -5,15 +5,17 @@ import csv
 from sklearn.model_selection import train_test_split
 from sksurv.ensemble import RandomSurvivalForest
 import matplotlib.pyplot as plt
+from sksurv.preprocessing import OneHotEncoder
 
 ## Import data and removing variables
-adult_data = pd.read_csv('adult_data.csv')
-adult_data = adult_data.drop(columns=['Unnamed: 0'])
+adult_data = pd.read_csv('allimputed.csv')
+#adult_data = adult_data.drop(columns=['Unnamed: 0'])
 adult_data = adult_data.drop(columns = ['Number'])
+#adult_data = adult_data.drop(columns = [' '])
 adult_data
 
 ## Get x and y datasets- separate predictors to y outcome variables
-X = adult_data[['BMI', 'Systolic', 'Diastolic', 'regularity', 'Chol2', 'Ethnicity', 'Household_income', 'Gender', 'Age', 'heart_attack', 'relative_ha', 'liver_problem', 'cancer', 'stroke', 'kidney_disease', 'occupation', 'days_active', 'smoking_status']]
+X = adult_data[['BMI', 'Systolic', 'Diastolic', 'regularity', 'Chol2', 'Ethnicity', 'Gender', 'Age', 'heart_attack', 'relative_ha', 'liver_problem', 'cancer', 'stroke', 'days_active', 'smoking_status']]
 y = adult_data[['mortstat', 'permth_int']]
 
 mort = list(y['mortstat'])
@@ -55,8 +57,11 @@ y_test = np.asarray(y_test)
 #print(y_test)
 print('starting to print to csv')
 
+x_train = OneHotEncoder().fit_transform(x_train)
+x_test = OneHotEncoder().fit_transform(x_test)
+
 ## open file and set up headers for model
-with open ('rsfmodel6_results.csv', 'w', newline = '') as outfile1:
+with open ('rsfmodel9_results.csv', 'w', newline = '') as outfile1:
     writer = csv.writer(outfile1)
     headers = ['model_number', 'num_trees', 'split', 'leaf', 'c_statistic']
     first = headers
@@ -64,9 +69,9 @@ with open ('rsfmodel6_results.csv', 'w', newline = '') as outfile1:
     
     model_values = []
     model_num = 0
-    for t in (100, 150, 175):
-        for s in (10, 50, 75):
-            for l in (10, 50, 75):
+    for t in (75, 100, 150):
+        for s in (10,25, 50):
+            for l in (10,25, 50):
                 rsf = RandomSurvivalForest(n_estimators= t,
                                            min_samples_split= s,
                                            min_samples_leaf= l,

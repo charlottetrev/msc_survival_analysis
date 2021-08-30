@@ -13,13 +13,13 @@ from sksurv.preprocessing import OneHotEncoder
 ## Download data and remove columns
 ## Adult_dataedit is datafile used for loss = ipcwls for time to event values
 ## Add absolute path file
-adult_data = pd.read_csv('adult_data.csv')
-adult_data = adult_data.drop(columns=['Unnamed: 0'])
+adult_data = pd.read_csv('allimputed.csv')
+#adult_data = adult_data.drop(columns=['Unnamed: 0'])
 adult_data = adult_data.drop(columns = ['Number'])
 print('got data and removed unnecessary columns...so far so good...')
 
 ## Get x and y datasets- separate predictors to y outcome variables
-X = adult_data[['BMI', 'Systolic', 'Diastolic', 'regularity', 'Chol2', 'Ethnicity', 'Household_income', 'Gender', 'Age', 'heart_attack', 'relative_ha', 'liver_problem', 'cancer', 'stroke', 'occupation', 'days_active', 'smoking_status']]
+X = adult_data[['BMI', 'Systolic', 'Diastolic', 'regularity', 'Chol2', 'Ethnicity', 'Gender', 'Age', 'heart_attack', 'relative_ha', 'liver_problem', 'cancer', 'stroke','days_active', 'smoking_status']]
 y = adult_data[['mortstat', 'permth_int']]
 
 mort = list(y['mortstat'])
@@ -44,7 +44,7 @@ dt = np.dtype([('fstat', '?'),('lenfol', '<f8')])
 Y = np.array(Y,dtype=dt)
 
 ## Get test and train data values and then split X data
-train_vals, test_vals = train_test_split(range(len(adult_data)), test_size = 0.2)
+train_vals, test_vals = train_test_split(range(len(adult_data)), test_size = 0.2, random_state=1)
 x_train = X.loc[train_vals].reset_index(drop = True)
 x_test = X.loc[test_vals].reset_index(drop = True)
 
@@ -74,13 +74,13 @@ x_test1 = OneHotEncoder().fit_transform(x_test)
 #estimator_gb = GradientBoostingSurvivalAnalysis(n_estimators = 100, learning_rate = 0.1, random_state = 0)
 
 ## Import data and removing variables
-adult_data2 = pd.read_csv('adult_datatest.csv')
-adult_data2 = adult_data2.drop(columns=['Unnamed: 0'])
+adult_data2 = pd.read_csv('adult_datatest2.csv')
+#adult_data2 = adult_data2.drop(columns=['Unnamed: 0'])
 adult_data2 = adult_data2.drop(columns = ['Number'])
 adult_data2
 
 ## Get x and y datasets- separate predictors to y outcome variables
-X2 = adult_data2[['BMI', 'Systolic', 'Diastolic', 'regularity', 'Chol2', 'Ethnicity', 'Household_income', 'Gender', 'Age', 'heart_attack', 'relative_ha', 'liver_problem', 'cancer', 'stroke', 'occupation', 'days_active', 'smoking_status']]
+X2 = adult_data2[['BMI', 'Systolic', 'Diastolic', 'regularity', 'Chol2', 'Ethnicity', 'Gender', 'Age', 'heart_attack', 'relative_ha', 'liver_problem', 'cancer', 'stroke', 'days_active', 'smoking_status']]
 y2 = adult_data2[['mortstat', 'permth_int']]
 X2 = OneHotEncoder().fit_transform(X2)
 
@@ -107,17 +107,20 @@ Y2 = np.array(Y2,dtype=dt2)
 ## Doing predictions and loops and writing to csv files
 ## Change headers for whichever datafile is being made
 ## Loss = ipclws for the time to event values
-#with open ('rtcalibrate_timetoevent.csv', 'w', newline = '') as outfile1:
-    #writer = csv.writer(outfile1)
-    #headers = ['index', 'timetoevent']
-    #first = headers
-    #writer.writerow(first)
-    #res = []
-    #estimator_gb = GradientBoostingSurvivalAnalysis(n_estimators = 150, learning_rate = 0.1, max_depth=1, random_state = 0)
-    #estimator_gb.fit(x_train1, y_train)
+with open ('rttimetoevent.csv', 'w', newline = '') as outfile1:
+    writer = csv.writer(outfile1)
+    headers = ['index', 'timetoevent']
+    first = headers
+    writer.writerow(first)
+    res = []
+    estimator_gb = GradientBoostingSurvivalAnalysis(n_estimators = 150, learning_rate = 0.1, max_depth=1, random_state = 0, loss = 'ipcwls')
+    estimator_gb.fit(x_train1, y_train)
 
-estimator_gb = GradientBoostingSurvivalAnalysis(n_estimators = 150, learning_rate = 0.1, max_depth=1, random_state = 0)
-estimator_gb.fit(x_train1, y_train)
+#get c-stat prediction
+#estimator_gb = GradientBoostingSurvivalAnalysis(n_estimators = 150, learning_rate = 0.1, max_depth=1, random_state = 0)
+#estimator_gb.fit(x_train1, y_train)
+#test_score = estimator_gb.score(x_test1, y_test)
+#print('testing score = ', test_score)
 
 ## Calibration values for the test set to make plots later
 #calibrateres = estimator_gb.predict_survival_function(x_test1)
@@ -129,11 +132,11 @@ estimator_gb.fit(x_train1, y_train)
 #print('train score for rt gb is: ', train_score)
 
 ## Append values from risk scores to open csv code from further up
-    #results = estimator_gb.predict(x_test1)
-    #for i in results:
-        #res.append(i)
-        #writer.writerow(res)
-        #res = []
+    results = estimator_gb.predict(x_test1)
+    for i in results:
+        res.append(i)
+        writer.writerow(res)
+        res = []
 ## Using new data to produce risk scores and append to csv
 #with open ('rtgradboost_newdatariskscores.csv', 'w', newline = '') as outfile1:
 #    writer = csv.writer(outfile1)
@@ -151,16 +154,16 @@ estimator_gb.fit(x_train1, y_train)
 
 ## Get the survival function values to make a plot for the new data
 #estimator_gb = GradientBoostingSurvivalAnalysis(n_estimators = 150, learning_rate = 0.1, max_depth=1, random_state = 0)
-survfuncs = estimator_gb.predict_survival_function(X2)
+#survfuncs = estimator_gb.predict_survival_function(X2)
 ## Loop through survival functions and add to a graph
-for p in survfuncs:
-    plt.step(p.x, p(p.x), where = 'post')
-    print(p[1])
-plt.ylim(0,1)
-plt.ylabel('Survival probability P(T>t) ')
-plt.xlabel('Time (months)')
-plt.title('RTGB model estimate of survival for 6 test individuals')
-plt.legend()
-plt.grid(True)
-plt.show()
-plt.savefig('rtgradboosttest.png')
+#for p in survfuncs:
+    #plt.step(p.x, p(p.x), where = 'post')
+    #print(1)
+#plt.ylim(0,1)
+#plt.ylabel('Survival probability P(T>t) ')
+#plt.xlabel('Time (months)')
+#plt.title('RTGB model estimate of survival for 6 test individuals')
+#plt.legend()
+#plt.grid(True)
+#plt.show()
+#plt.savefig('rtgradboosttest.png')

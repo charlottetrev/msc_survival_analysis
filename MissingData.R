@@ -1,5 +1,5 @@
 ##Missing data imputation
-
+adult_nh <- read.csv('adult_nh.csv')
 ## Download relevant libraries
 library(mice)
 
@@ -42,4 +42,33 @@ adult_data
 ## Save new dataset with irrelevant columns removed
 save(adult_data, file = 'adult_data.RData')
 write.csv(adult_data, file = 'adult_data.csv')
+
+
+alldata <- read.csv('adult_data.csv')
+alldata <- alldata[3:22]
+alldata <- select(alldata, -c(occupation, Household_income))
+## changing values to make 2 groups in variables 
+alldata$smoking_status[alldata$smoking_status == 2] <- 1
+alldata$smoking_status[alldata$smoking_status ==3] <- 2
+alldata$heart_attack[alldata$heart_attack==9] <- NA
+alldata$heart_attack[alldata$heart_attack==7] <- NA
+alldata$relative_ha[alldata$relative_ha==9] <- NA
+alldata$liver_problem[alldata$liver_problem==9] <- NA
+alldata$cancer[alldata$cancer==9] <- NA
+alldata$stroke[alldata$stroke==9] <- NA
+
+numberna <- map(alldata, ~sum(is.na(.)))
+numberna
+alldataim <- mice(alldata, m=1)
+alldataim <- complete(alldataim, 1)
+alldataim
+## scale the BP and cholesterol variables
+alldataim$Systolic = alldataim$Systolic/10
+alldataim$Diastolic = alldataim$Diastolic/10
+alldataim$Chol2 = alldataim$Chol2/10
+write.csv(alldataim, file='allimputed.csv')
+
+alldata2 <-dummy_cols(alldataim, select_columns =c('Ethnicity'), remove_selected_columns = TRUE)
+save(alldata2, file = 'adult_data2.RData')
+write.csv(alldata2, file = 'adult_data2.csv')
 
